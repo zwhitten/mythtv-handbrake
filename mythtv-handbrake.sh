@@ -3,16 +3,17 @@
 #By:
 #http://reubencrane.com/blog/?p=80
 #Modified by Marty Gilbert, 04/15/2013
+#Modified by Z. Whitten, 01/27/2014
 
-#My attempt to cut commercials from myth recording and save as mkv
+#My attempt to cut commercials from myth recording and save as mp4
 #Run as MythTV User Job with %FILE% as argument 1
 #Argument 1: filename
 
 ######## USER SETTINGS ###############
 logdir="/var/log/mythtv"
-mythrecordingsdir="/video/storage"
-tmpdir="/video/tmp" 
-outdir="/video/videos"
+mythrecordingsdir="/var/lib/mythtv/recordings/"
+tmpdir="/tmp/videos" 
+outdir="/home/mythtv/videos"
 #outdir="/tmp"
 scriptstarttime=$(date +%F-%H%M%S)
 logfile="$logdir/$scriptstarttime-COMCUT.log"
@@ -22,10 +23,8 @@ USER="mythtv";
 PASS="mypass";
 DB="mythconverg";
 
-HANDBRAKE="/bin/HandBrakeCLI";
-FFMPEG="/bin/ffmpeg";
-MKVMERGE="/bin/mkvmerge";
-
+HANDBRAKE="/usr/bin/HandBrakeCLI";
+FFMPEG="/usr/bin/ffmpeg";
 
 ######## NICE THE PROCESS ##################3
 MYPID=$$
@@ -129,33 +128,33 @@ function handbrake_encode {
         echo "File Found for Encoding - $file" >> "$logfile"
         if [ "$1" -eq 1 ]; then
             echo "only one file found" >> "$logfile";
-            output="$outdir/$NAME.mkv"
+            output="$outdir/$NAME.mp4"
         else 
-            output="$file.mkv"
+            output="$file.mp4"
         fi
 
-        "$HANDBRAKE" -i "$file" -o "$output" -f mkv -e x264 --x264-preset superfast --x264-profile high --x264-tune film -q 30 -E lame --ac 2 --ab 128 --audio-fallback ffac3 --crop 0:0:0:0 -w $W -l $L --decomb
+        "$HANDBRAKE" -i "$file" -o "$output" -f mp4 -e x264 --x264-preset superfast --x264-profile high --x264-tune film -q 30 -E lame --ac 2 --ab 128 --audio-fallback ffac3 --crop 0:0:0:0 -w $W -l $L --decomb
         echo "HandBrakeCLI exit code:$?" >> "$logfile"
     done
 }
 
 #### MKVMERGE FILES ######
 function merge_files {
-    MERGE=" "
-    PLUS=""
+#TODO update to merge using ffmpeg
+    #MERGE=" "
+    #PLUS=""
     #for file in $(find $tmpdir -name tmp\*.mpg.mkv | sort); do
     #echo "for file in $(ls -rt $tmpdir/tmp*.mpg.mkv); do"
-    for file in $(ls -1 $tmpdir/tmp*.mpg.mkv); do
-        echo "File Found for Merging - $file"
-        MERGE=$(echo "$MERGE $PLUS$file")
-        PLUS="+"
-    done
+    #for file in $(ls -1 $tmpdir/tmp*.mpg.mkv); do
+    #    echo "File Found for Merging - $file"
+    #    MERGE=$(echo "$MERGE $PLUS$file")
+    #    PLUS="+"
+   # done
 
-    echo "$MKVMERGE" -o $outdir/$NAME.mkv "$MERGE" >> "$logfile"
-    "$MKVMERGE" -o $outdir/$NAME.mkv $MERGE 
-    echo "mkvmerge exit code:$? " >> "$logfile"
+    #echo "$MKVMERGE" -o $outdir/$NAME.mkv "$MERGE" >> "$logfile"
+    #"$MKVMERGE" -o $outdir/$NAME.mkv $MERGE 
+    #echo "mkvmerge exit code:$? " >> "$logfile"
 }
-
 ###### END OF FUNCTIONS #########
 
 
